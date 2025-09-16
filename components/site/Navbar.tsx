@@ -14,66 +14,69 @@ const NAV: NavItem[] = [
   { href: '/upload', label: 'Upload Data', cta: true },
 ]
 
+// Simple NavLink that marks the current route as active
+function NavLink({
+  href,
+  children,
+  className = '',
+}: {
+  href: string
+  children: React.ReactNode
+  className?: string
+}) {
+  const pathname = usePathname()
+  const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
+  // Active style: teal underline + stronger text
+  const active =
+    'text-white underline decoration-customLightTeal underline-offset-8'
+  const base = 'text-white/90 hover:text-white transition'
+  return (
+    <Link
+      href={href}
+      className={`${base} ${isActive ? active : ''} ${className}`}
+    >
+      {children}
+    </Link>
+  )
+}
+
 export default function NavBar() {
   const pathname = usePathname()
-  const isHome = pathname === '/'
   const [open, setOpen] = useState(false)
-
   useEffect(() => setOpen(false), [pathname])
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
-
-  const linkBase = isHome
-    ? 'text-white/80 hover:text-white'
-    : 'text-slate-600 hover:text-slate-900'
-  const activeLink = isHome ? 'text-white' : 'text-slate-900 font-medium'
 
   return (
-    // FULL-WIDTH header background; no rounded, no inner ring
-    <header
-      className={[
-        'fixed inset-x-0 top-0 z-20 backdrop-blur-md',
-        isHome
-          ? 'bg-black/40 text-white'
-          : 'bg-white/95 text-slate-900 ring-1 ring-black/10 supports-[backdrop-filter]:bg-white/80',
-      ].join(' ')}
-    >
-      {/* Contained content width only */}
+    // NOTE: not fixed — it scrolls with the page
+    <header className="relative z-20 w-full bg-customNavyTeal text-white shadow-sm">
+      {/* contained row */}
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
+        {/* Brand */}
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Image
             src="/images/geda-logo.png"
             alt="GedA Logo"
-            width={80}
+            width={160}
             height={40}
-            className="h-10 w-auto"
+            priority
+            style={{ width: 'auto', height: '40px' }}
           />
         </Link>
 
-        {/* Desktop */}
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-6 md:flex">
           {NAV.map((item) =>
             item.cta ? (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-xl bg-customTealWhite px-3 py-1.5 text-white hover:bg-customNavyTeal transition"
+                className="rounded-xl bg-customTealWhite px-3 py-1.5 text-white hover:bg-customNavyTeal/90 transition"
               >
                 {item.label}
               </Link>
             ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`${linkBase} transition ${
-                  pathname?.startsWith(item.href) ? activeLink : ''
-                }`}
-              >
+              <NavLink key={item.href} href={item.href}>
                 {item.label}
-              </Link>
+              </NavLink>
             )
           )}
         </nav>
@@ -85,38 +88,18 @@ export default function NavBar() {
           aria-expanded={open}
           aria-controls="mobile-menu"
           onClick={() => setOpen((v) => !v)}
-          className={[
-            'md:hidden inline-flex h-8 w-8 items-center justify-center rounded-md transition',
-            isHome
-              ? 'text-white hover:bg-white/10'
-              : 'text-slate-800 hover:bg-black/5',
-          ].join(' ')}
+          className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-md text-white/90 hover:bg-white/10 transition"
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Mobile overlay */}
-      {open && (
-        <button
-          aria-label="Close menu"
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-10 bg-black/40 md:hidden"
-        />
-      )}
-
-      {/* Mobile panel */}
+      {/* Mobile dropdown (attached to header, not fixed) */}
       <div
         id="mobile-menu"
-        className={[
-          'md:hidden fixed inset-x-0 top-14 z-20 origin-top transition-all duration-200',
-          isHome
-            ? 'bg-black/90 text-white'
-            : 'bg-white text-slate-900 ring-1 ring-black/10',
-          open
-            ? 'opacity-100 scale-y-100'
-            : 'pointer-events-none opacity-0 scale-y-95',
-        ].join(' ')}
+        className={`md:hidden absolute inset-x-0 top-full z-20 bg-customNavyTeal/95 border-t border-white/10 ${
+          open ? 'block' : 'hidden'
+        }`}
       >
         <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
           {NAV.map((item) =>
@@ -124,27 +107,18 @@ export default function NavBar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="mt-1 rounded-xl bg-customTealWhite px-3 py-2 text-center text-white hover:bg-customNavyTeal transition"
+                className="mt-1 rounded-xl bg-customTealWhite px-3 py-2 text-center text-white hover:bg-customNavyTeal/90 transition"
               >
                 {item.label}
               </Link>
             ) : (
-              <Link
+              <NavLink
                 key={item.href}
                 href={item.href}
-                className={[
-                  'rounded-lg px-3 py-2 text-base transition',
-                  pathname?.startsWith(item.href)
-                    ? isHome
-                      ? 'bg-white/10 text-white'
-                      : 'bg-black/5 text-slate-900'
-                    : isHome
-                    ? 'text-white/85 hover:bg-white/10 hover:text-white'
-                    : 'text-slate-700 hover:bg-black/5',
-                ].join(' ')}
+                className="rounded-lg px-3 py-2 text-base"
               >
                 {item.label}
-              </Link>
+              </NavLink>
             )
           )}
         </nav>

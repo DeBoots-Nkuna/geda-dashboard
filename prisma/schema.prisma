@@ -174,7 +174,7 @@ model Indicator {
   organizationId     String?
   organization       Organization?      @relation(fields: [organizationId], references: [id])
 
-  shortName          String             
+  indicatorShortName  String             
   description        String?           
 
   footprints         Footprint[]        
@@ -209,7 +209,8 @@ model Indicator {
   publicSharingConsent  Boolean?        
   frequentUpdates       Boolean?        
   webScrapingApproval   Boolean?       
-  dashboardUsage        Boolean?        
+  dashboardUsage        Boolean?
+  imageUrl            String?        
 
   status             PublishStatus      @default(PUBLISHED)
   createdAt          DateTime           @default(now())

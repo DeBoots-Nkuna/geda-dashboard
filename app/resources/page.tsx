@@ -11,18 +11,20 @@ export const metadata = {
 export default async function ResourcesPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; topic?: string }
+  // 👇 async params in Next 15
+  searchParams: Promise<{ q?: string; topic?: string }>
 }) {
-  const q = (searchParams?.q ?? '').trim()
-  const topic = (searchParams?.topic ?? '').toUpperCase()
+  const sp = await searchParams
+  const q = (sp?.q ?? '').trim()
+  const topic = (sp?.topic ?? '').toUpperCase()
 
-  const items: Indicator[] = await prisma.indicator.findMany({
+  const items = await prisma.indicator.findMany({
     where: {
       AND: [
         q
           ? {
               OR: [
-                { shortName: { contains: q, mode: 'insensitive' } },
+                { indicatorShortName: { contains: q, mode: 'insensitive' } },
                 { description: { contains: q, mode: 'insensitive' } },
               ],
             }
@@ -58,7 +60,7 @@ export default async function ResourcesPage({
             <IndicatorCard
               key={indicator.id}
               id={indicator.id}
-              title={indicator.shortName}
+              title={indicator.indicatorShortName}
               description={indicator.description}
               thematicAreas={indicator.thematicAreas as unknown as string[]}
             />
@@ -68,6 +70,8 @@ export default async function ResourcesPage({
     </div>
   )
 }
+
+// Empty state when no indicators match the filters
 
 function EmptyState() {
   return (
