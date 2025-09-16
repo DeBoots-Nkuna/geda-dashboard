@@ -32,30 +32,24 @@ export default function NavBar() {
   const activeLink = isHome ? 'text-white' : 'text-slate-900 font-medium'
 
   return (
-    <header className="fixed inset-x-0 top-0 z-20">
-      <div
-        className={[
-          'mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 rounded-b-2xl backdrop-blur',
-          isHome
-            ? 'bg-black/40 ring-1 ring-white/10 text-white'
-            : 'bg-white/95 ring-1 ring-black/10 text-slate-900 supports-[backdrop-filter]:bg-white/80',
-        ].join(' ')}
-      >
-        {/* Brand (click to go Home) */}
-        <Link
-          href="/"
-          className={
-            isHome
-              ? 'text-white font-semibold flex items-center gap-2'
-              : 'text-slate-900 font-semibold flex items-center gap-2'
-          }
-        >
+    // FULL-WIDTH header background; no rounded, no inner ring
+    <header
+      className={[
+        'fixed inset-x-0 top-0 z-20 backdrop-blur-md',
+        isHome
+          ? 'bg-black/40 text-white'
+          : 'bg-white/95 text-slate-900 ring-1 ring-black/10 supports-[backdrop-filter]:bg-white/80',
+      ].join(' ')}
+    >
+      {/* Contained content width only */}
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2 font-semibold">
           <Image
             src="/images/geda-logo.png"
-            alt="Geda Logo"
-            width={50}
-            height={50}
-            className="h-20 w-20  object-contain"
+            alt="GedA Logo"
+            width={80}
+            height={40}
+            className="h-10 w-auto"
           />
         </Link>
 
@@ -117,7 +111,7 @@ export default function NavBar() {
         className={[
           'md:hidden fixed inset-x-0 top-14 z-20 origin-top transition-all duration-200',
           isHome
-            ? 'bg-black/90 text-white ring-1 ring-white/10'
+            ? 'bg-black/90 text-white'
             : 'bg-white text-slate-900 ring-1 ring-black/10',
           open
             ? 'opacity-100 scale-y-100'

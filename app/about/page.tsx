@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 pt-24 pb-20">
+    <div className="mx-auto max-w-6xl px-4 py-10">
       {/* Title */}
       <h1 className="text-4xl font-bold tracking-tight text-customNavyTeal sm:text-5xl">
         About GedA Dashboard
@@ -80,6 +80,6 @@ export default function AboutPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

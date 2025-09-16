@@ -1,10 +1,9 @@
 import Link from 'next/link'
-import NavBar from '@/components/site/Navbar'
 import BgVideo from '@/components/site/BgVideo'
 
 export default function HomePage() {
   return (
-    <main className="relative h-dvh overflow-hidden bg-black">
+    <div className="relative h-screen overflow-hidden bg-black">
       {/* Background video */}
       <div className="pointer-events-none absolute inset-0 z-0">
         <BgVideo rate={0.5} webm="/videos/hero-bg.webm" />
@@ -14,7 +13,7 @@ export default function HomePage() {
       </div>
       {/* Foreground */}
       <div className="relative z-10">
-        <section className="mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-4 pt-16 text-center mt-20">
+        <section className="mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-4 text-center">
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white sm:text-6xl">
             <span className="bg-gradient-to-r from-customTealWhite to-customNavyTeal bg-clip-text text-transparent">
               Lorem Ipsum{' '}
@@ -45,6 +44,6 @@ export default function HomePage() {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   )
 }

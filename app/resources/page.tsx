@@ -36,7 +36,7 @@ export default async function ResourcesPage({
   })
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pt-24 pb-10">
+    <div className="mx-auto max-w-6xl px-4 py-10">
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-customNavyTeal">
           Data Center
@@ -65,7 +65,7 @@ export default async function ResourcesPage({
           ))}
         </section>
       )}
-    </main>
+    </div>
   )
 }
 

@@ -29,12 +29,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${outfit.variable} ${lato.variable} min-h-svh grid grid-rows-[auto_1fr_auto] bg-white/30 text-slate-900`}
+        className={`${outfit.variable} ${lato.variable} min-h-screen bg-black/30 text-slate-900`}
       >
         <Providers>
-          <NavBar />
-          {children}
-          <Footer />
+          <div className="flex min-h-screen flex-col">
+            <NavBar />
+            <main className="flex-1 pt-16">{children}</main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>
