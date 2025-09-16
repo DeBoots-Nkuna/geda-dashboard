@@ -3,6 +3,7 @@ import { Outfit, Lato } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/site/providers'
 import Footer from '@/components/site/Footer'
+import NavBar from '@/components/site/Navbar'
 
 const outfit = Outfit({
   variable: '--font-heading',
@@ -28,10 +29,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${outfit.variable} ${lato.variable} min-h-dvh flex flex-col bg-white text-slate-900 antialiased`}
+        className={`${outfit.variable} ${lato.variable} min-h-svh grid grid-rows-[auto_1fr_auto] bg-white/30 text-slate-900`}
       >
-        <Providers>{children}</Providers>
-        <Footer />
+        <Providers>
+          <NavBar />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   )

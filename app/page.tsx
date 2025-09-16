@@ -14,8 +14,6 @@ export default function HomePage() {
       </div>
       {/* Foreground */}
       <div className="relative z-10">
-        <NavBar />
-
         <section className="mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-4 pt-16 text-center mt-20">
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white sm:text-6xl">
             <span className="bg-gradient-to-r from-customTealWhite to-customNavyTeal bg-clip-text text-transparent">

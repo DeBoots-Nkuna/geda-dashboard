@@ -18,6 +18,11 @@
 :root {
   color-scheme: light;
 }
+
+html,
+body {
+  margin: 0;
+}
 body {
   @apply antialiased bg-white text-slate-900;
   background: radial-gradient(
