@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import type { Indicator } from '@/lib/generated/prisma'
 import { ThematicArea } from '@/lib/generated/prisma'
 import FiltersBar from '@/components/site/DataFilter'
 import { IndicatorCard } from '@/components/site/IndicatorCard'

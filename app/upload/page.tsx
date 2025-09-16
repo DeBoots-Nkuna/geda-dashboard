@@ -98,7 +98,7 @@ export default function UploadPage() {
                 type="button"
                 onClick={openPicker}
                 disabled={busy}
-                className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50"
+                className="bg-teal-600 hover:bg-teal-700 disabled:opacity-50 cursor-pointer"
               >
                 Choose file
               </Button>
@@ -135,7 +135,7 @@ export default function UploadPage() {
                 setFileName(null)
               }}
               disabled={busy || !hasData}
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-slate-700 hover:text-white disabled:opacity-50"
             >
               Clear
             </Button>

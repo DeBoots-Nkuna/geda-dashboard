@@ -6,28 +6,33 @@ interface LoginRequest {
 }
 
 export async function POST(req: NextRequest) {
-  const { userName, password } = await req
-    .json()
-    .catch(() => ({} as LoginRequest))
-  const ok =
-    userName === process.env.ADMIN_USER &&
-    password === process.env.ADMIN_PASSWORD
+  try {
+    const { username, password } = await req.json()
 
-  if (!ok) {
-    return NextResponse.json(
-      { message: 'Invalid credentials' },
-      { status: 401 }
-    )
+    const ADMIN_USER = process.env.ADMIN_USERNAME ?? 'root'
+    const ADMIN_PASS = process.env.ADMIN_PASSWORD ?? 'root#123'
+
+    const ok = username === ADMIN_USER && password === ADMIN_PASS
+    if (!ok) {
+      return NextResponse.json(
+        { message: 'Invalid credentials' },
+        { status: 401 }
+      )
+    }
+
+    const res = NextResponse.json({ ok: true })
+
+    // Set cookie used by your edit/delete API routes
+    res.cookies.set('geda_session', '1', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 8, // 8 hours
+    })
+
+    return res
+  } catch {
+    return NextResponse.json({ message: 'Bad request' }, { status: 400 })
   }
-
-  const res = NextResponse.json({ ok: true })
-  // minimal httpOnly session cookie
-  res.cookies.set('geda_session', '1', {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 60 * 60 * 8, // 8h
-  })
-  return res
 }

@@ -1,31 +1,47 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import ClientDelete from '@/components/site/DeleteIndicator'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { prisma } from '@/lib/prisma'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? '' // same-origin by default
-
+//fetching indicator data
 async function getIndicator(id: string) {
-  const res = await fetch(`${API_BASE}/api/indicators/${id}`, {
-    cache: 'no-store',
-  })
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error('Failed to fetch indicator.')
-  // optional tiny delay for nicer skeleton transitions
-  // await new Promise(r => setTimeout(r, 600))
-  return res.json()
+  try {
+    const indicator = await prisma.indicator.findUnique({
+      where: { id },
+      include: {
+        organization: true, // Include organization data
+      },
+    })
+    return indicator
+  } catch (error) {
+    console.error('Error fetching indicator:', error)
+    throw new Error('Failed to fetch indicator.')
+  }
 }
+
+/* -------- page -------- */
 
 export default async function IndicatorDetailedPage({
   params,
 }: {
-  params: { indicatorId: string }
+  params: Promise<{ id: string }> // 👈 your folder is [id]
 }) {
-  const indicator = await getIndicator(params.indicatorId)
+  const { id } = await params // 👈 await the promise
+  const indicator = await getIndicator(id)
   if (!indicator) notFound()
 
-  const tags = coerceArray(indicator.thematicAreas)
-  const footprint = coerceArray(indicator.indicatorFootprint)
+  const tags = asArray(indicator.thematicAreas)
+  const footprint = asArray(indicator.footprints)
 
+  const title = indicator.indicatorShortName ?? 'Indicator'
+  const desc = indicator.description ?? ''
+  const imgSrc: string =
+    indicator.imageUrl || '/images/indicator-placeholder.png'
+  const unoptimized = /^data:/i.test(imgSrc)
   return (
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-16">
       {/* breadcrumb + back */}
@@ -48,135 +64,185 @@ export default async function IndicatorDetailedPage({
       {/* title + tags */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-          {indicator.indicatorShortName ?? indicator.shortName}
+          {title}
         </h1>
         {tags?.length ? (
           <div className="flex flex-wrap gap-2">
-            {tags.map((t) => (
-              <span
+            {tags.map((t: string) => (
+              <Badge
                 key={t}
-                className="rounded-full border border-customNavyTeal/30 bg-white px-3 py-1 text-xs font-medium text-customNavyTeal"
+                variant="outline"
+                className="border-customNavyTeal/30 text-customNavyTeal"
               >
                 {humanize(t)}
-              </span>
+              </Badge>
             ))}
           </div>
         ) : null}
       </header>
 
-      {/* main content */}
+      {/* layout */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
-        {/* left: image + description + footprint */}
-        <article className="rounded-2xl border bg-white p-4 shadow-soft">
-          <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl">
+        {/* left: media + description + footprint */}
+        <Card className="overflow-hidden">
+          <div className="relative aspect-[16/9] w-full bg-slate-100">
             <Image
-              src={indicator.indicatorImage || '/images/placeholder.jpg'}
-              alt=""
+              src={imgSrc}
+              alt={title}
               fill
               sizes="(max-width:768px) 100vw, 66vw"
               className="object-cover"
               priority
+              unoptimized={unoptimized}
             />
           </div>
+          <CardContent className="p-4">
+            {desc ? (
+              <p className="text-slate-700 leading-6">{desc}</p>
+            ) : (
+              <p className="text-slate-500 italic">No description provided.</p>
+            )}
 
-          {indicator.indicatorDescription ? (
-            <p className="text-slate-700">{indicator.indicatorDescription}</p>
-          ) : null}
-
-          {footprint?.length ? (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-slate-900">
-                Indicator Footprint
-              </h3>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {footprint.map((v) => (
-                  <span
-                    key={v}
-                    className="rounded-full bg-customTextNavy/30 px-2 py-1 text-xs"
-                  >
-                    {v}
-                  </span>
-                ))}
+            {footprint?.length ? (
+              <div className="mt-5">
+                <h3 className="text-sm font-semibold text-slate-900">
+                  Indicator Footprint
+                </h3>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {footprint.map((v) => (
+                    <span
+                      key={v}
+                      className="rounded-full bg-customTextNavy/20 px-2 py-1 text-xs text-slate-800"
+                    >
+                      {humanize(v)}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
-        </article>
+            ) : null}
+          </CardContent>
+        </Card>
 
         {/* right: organization + quick facts */}
-        <aside className="space-y-4">
-          <section className="rounded-2xl border bg-white p-4 shadow-soft">
-            <h3 className="text-sm font-semibold text-slate-900">
-              Organization
-            </h3>
-            <dl className="mt-3 space-y-2 text-sm">
-              <Row label="Full Name" value={indicator.organisationFullName} />
-              <Row
-                label="Contact Name"
-                value={indicator.organisationContactName}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Organization</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">
+              <InfoRow
+                label="Full Name"
+                value={indicator.organization?.name ?? '—'}
               />
-              <Row label="Email" value={indicator.organisationContactEmail} />
-              <Row
+              <InfoRow
+                label="Contact Name"
+                value={indicator.organization?.contactName ?? '—'}
+              />
+              <InfoRow
+                label="Email"
+                value={indicator.organization?.contactEmail ?? '—'}
+              />
+              <InfoRow
                 label="Website"
                 value={
-                  indicator.organisationWebsite ? (
+                  indicator.organization?.website ? (
                     <a
-                      href={indicator.organisationWebsite}
+                      href={indicator.organization.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-customNavyTeal underline decoration-transparent hover:decoration-current"
                     >
-                      {indicator.organisationWebsite}
+                      {indicator.organization.website}
                     </a>
                   ) : (
                     '—'
                   )
                 }
               />
-            </dl>
-          </section>
+            </CardContent>
+          </Card>
 
-          <section className="rounded-2xl border bg-white p-4 shadow-soft">
-            <h3 className="text-sm font-semibold text-slate-900">Details</h3>
-            <dl className="mt-3 space-y-2 text-sm">
-              <Row
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Details</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">
+              <InfoRow
                 label="Start Year"
-                value={indicator.indicatorYearStart ?? '—'}
+                value={indicator.yearStart?.toString() ?? '—'}
               />
-            </dl>
-          </section>
-        </aside>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* methodology & communication */}
-      {(indicator.methodology || indicator.communicationDetails) && (
-        <section className="mt-6 rounded-2xl border bg-white p-4 shadow-soft">
-          <h3 className="text-sm font-semibold text-slate-900">
-            Methodology & Communication
-          </h3>
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <p className="text-sm leading-6 text-slate-700">
-              <span className="font-medium text-slate-900">Methodology:</span>{' '}
-              {indicator.methodology || '—'}
-            </p>
-            <p className="text-sm leading-6 text-slate-700">
-              <span className="font-medium text-slate-900">Communication:</span>{' '}
-              {indicator.communicationDetails || '—'}
-            </p>
-          </div>
-        </section>
+      {(indicator.methodology ||
+        indicator.commChannels?.length ||
+        indicator.commLink) && (
+        <Card className="mt-6">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              Methodology &amp; Communication
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h4 className="text-xs font-semibold text-slate-500 mb-1">
+                  Methodology
+                </h4>
+                <p className="text-sm leading-6 text-slate-700">
+                  {indicator.methodology || '—'}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-slate-500 mb-1">
+                  Communication
+                </h4>
+                <div className="text-sm leading-6 text-slate-700">
+                  {indicator.commChannels &&
+                  indicator.commChannels.length > 0 ? (
+                    <div className="mb-2">
+                      <span className="font-medium">Channels: </span>
+                      {indicator.commChannels.join(', ')}
+                    </div>
+                  ) : null}
+                  {indicator.commLink ? (
+                    <div>
+                      <span className="font-medium">Link: </span>
+                      <a
+                        href={indicator.commLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-customNavyTeal underline decoration-transparent hover:decoration-current"
+                      >
+                        {indicator.commLink}
+                      </a>
+                    </div>
+                  ) : null}
+                  {!indicator.commChannels?.length &&
+                    !indicator.commLink &&
+                    '—'}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* actions */}
+      <Separator className="my-8" />
       <ActionsRow id={indicator.id} />
     </main>
   )
 }
 
-/* ---------- helpers & small presentational bits ---------- */
+/* -------- presentational bits -------- */
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex items-start justify-between gap-4 py-1">
       <dt className="shrink-0 text-slate-500">{label}</dt>
       <dd className="grow text-right text-slate-900">{value || '—'}</dd>
     </div>
@@ -190,33 +256,31 @@ function humanize(v: string) {
     .replace(/\b\w/g, (m) => m.toUpperCase())
 }
 
-function coerceArray(value: unknown): string[] | undefined {
-  try {
-    const v = typeof value === 'string' ? JSON.parse(value) : value
-    return Array.isArray(v) ? v : undefined
-  } catch {
-    return undefined
-  }
-}
+/* -------- actions -------- */
 
-/* Actions row includes Edit (to login) + Delete (confirm) */
 function ActionsRow({ id }: { id: string }) {
+  const next = encodeURIComponent(`/resources/${id}/edit`)
   return (
-    <div className="mt-8 flex flex-wrap gap-2">
-      <Link
-        href={`/admin/login?next=/resources/${id}/edit`}
+    <div className="flex flex-wrap gap-2">
+      <a
+        href={`/login?next=${next}`}
         className="rounded-xl bg-customTealWhite px-4 py-2 text-white transition hover:bg-customNavyTeal"
       >
         Edit Indicator
-      </Link>
-      {/* client-side delete button below */}
-      <DeleteIndicator id={id} />
+      </a>
+      <ClientDelete id={id} />
     </div>
   )
 }
 
-/* Delete button (client) */
-function DeleteIndicator({ id }: { id: string }) {
-  // This is inlined to keep the file self-contained; you can lift it out to a component file if you prefer.
-  return <ClientDelete id={id} />
+/* -------- helpers -------- */
+function asArray(v: unknown): string[] | undefined {
+  if (Array.isArray(v)) return v as string[]
+  if (typeof v === 'string') {
+    try {
+      const p = JSON.parse(v)
+      return Array.isArray(p) ? (p as string[]) : undefined
+    } catch {}
+  }
+  return undefined
 }

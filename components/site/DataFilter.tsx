@@ -16,14 +16,9 @@ const THEMES = [
   'AGRICULTURE',
   'BIODIVERSITY',
   'CLIMATE_CHANGE',
-  'ENERGY',
   'FISHERIES',
-  'FORESTRY',
-  'LAND',
+  'LEADERSHIP',
   'NUTRITION',
-  'OCEANS',
-  'WATER',
-  'OTHER',
 ] as const
 type ThemeKey = (typeof THEMES)[number]
 
