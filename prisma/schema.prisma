@@ -1,0 +1,217 @@
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// ===== Enums aligned with check boxes =====
+enum Footprint { 
+  GLOBAL 
+  REGIONAL 
+  NATIONAL 
+  LOCALISED 
+}
+
+enum ThematicArea {
+  AGRICULTURE 
+  BIODIVERSITY 
+  CLIMATE_CHANGE 
+  ENERGY 
+  ENVIRONMENTAL_LEADERSHIP
+  FISHERIES 
+  FORESTRY 
+  GENDER_BASED_VIOLENCE 
+  LAND 
+  NUTRITION 
+  OCEANS
+  REPRODUCTIVE_HEALTH 
+  SERVICE_DELIVERY 
+  WATER 
+  OTHER
+}
+
+enum IndicatorCategory {
+  CLIMATE_ADAPTATION 
+  CLIMATE_MITIGATION 
+  LOSS_DAMAGE_RISK
+  ADAPTATION_AND_MITIGATION 
+  ADAPTATION_AND_LDR 
+  MITIGATION_AND_LDR
+  ADAPTATION_MITIGATION_AND_LDR
+  OTHER
+}
+
+enum TypeOfData {
+  AREA_BASED_PROJECTS
+  CITIZEN_GENERATED
+  NATIONAL_STATISTICS
+  RESEARCH_PROJECTS
+  OTHER
+}
+
+enum DataNature { 
+  QUANTITATIVE 
+  QUALITATIVE 
+  BOTH 
+}
+
+enum SupportedGroup {
+  CASTES 
+  CHILDREN 
+  VULNERABLE_TO_CLIMATE_CHANGE 
+  INDIGENOUS_PEOPLE 
+  LGBTQ_PLUS
+  SMALL_SCALE_INDUSTRY 
+  TRIBAL_GROUPS 
+  WOMEN 
+  YOUTH 
+  OTHER
+}
+
+enum Purpose {
+  ADVOCACY 
+  CAPACITY_BUILDING 
+  ENV_DATA_SCIENCE 
+  GESI_ANALYSIS 
+  M_E
+  POLICY_MAKING 
+  POLICY_RESEARCH 
+  SUSTAINABLE_DEV_TECH 
+  OTHER
+}
+
+enum TargetAudience {
+  GOVERNMENT 
+  DONORS 
+  PRACTITIONERS 
+  CIVIL_SOCIETY 
+  ACADEMIA 
+  OTHER
+}
+
+enum PreAnalysis { 
+  STAKEHOLDER_ENGAGEMENTS 
+  DATA_QUALITY_CONTROL 
+  DB_STRUCTURE 
+  DISAGGREGATION_BY_GENDER 
+  OTHER 
+}
+
+enum DataAnalysis { 
+  STATISTICAL_MODELLING 
+  QUALITATIVE_CODING 
+  VISUAL_REPRESENTATION 
+  OTHER 
+}
+
+enum ResultValidation { 
+  PEER_REVIEW 
+  EXPERT_FEEDBACK 
+  SUPPORTED_GROUP_FEEDBACK 
+  TARGET_AUDIENCE_FEEDBACK 
+  TRIANGULATION 
+  OTHER 
+}
+
+enum Frequency { 
+  ANNUALLY 
+  QUARTERLY 
+  EVENT_TRIGGERED 
+  OTHER 
+}
+
+enum CommChannel {
+  PEER_REVIEWED 
+  NON_PEER_REVIEWED 
+  WEBSITE 
+  WEBINAR 
+  LINKEDIN 
+  FACEBOOK 
+  X 
+  TIKTOK
+  INSTAGRAM 
+  WHATSAPP 
+  YOUTUBE 
+  TELEGRAM 
+  SIGNAL 
+  RADIO 
+  STREAMING 
+  TELEVISION
+  MAGAZINES_BLOGS 
+  OTHER
+}
+
+enum PublishStatus { 
+  DRAFT 
+  PUBLISHED 
+}
+
+
+
+
+
+model Organization {
+  id          String       @id @default(cuid())
+  code        String?     
+  name        String
+  contactName String?
+  contactEmail String?
+  website     String?
+  indicators  Indicator[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+
+model Indicator {
+  id                 String             @id @default(cuid())
+  organizationId     String?
+  organization       Organization?      @relation(fields: [organizationId], references: [id])
+
+  shortName          String             
+  description        String?           
+
+  footprints         Footprint[]        
+  countries          String[]          
+
+  thematicAreas      ThematicArea[]   
+  indicatorCategories IndicatorCategory[]
+  indicatorCategoryOther String?        
+
+  typeOfData         TypeOfData[]      
+  dataNature         DataNature         
+
+  groupsSupported    SupportedGroup[]  
+  purposes           Purpose[]          
+
+  yearStart          Int?               
+  methodology        String?            
+  limitations        String?            
+
+  preAnalysis        PreAnalysis[]      
+  dataAnalysis       DataAnalysis[]     
+  resultValidation   ResultValidation[] 
+
+  frequency          Frequency?         
+  frequencyNote      String?           
+
+  linksToData        String[]           
+  commChannels       CommChannel[]      
+  commDate           DateTime?
+  commLink           String?
+
+  publicSharingConsent  Boolean?        
+  frequentUpdates       Boolean?        
+  webScrapingApproval   Boolean?       
+  dashboardUsage        Boolean?        
+
+  status             PublishStatus      @default(PUBLISHED)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}

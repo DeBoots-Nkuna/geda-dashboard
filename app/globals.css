@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@import 'tailwindcss';
+
+@theme {
+  --color-customTealWhite: #009e91;
+  --color-customNavyTeal: #006170;
+  --color-customLightTeal: #73c491;
+  --color-customTextNavy: #ade0db;
+  --color-customTextDarkTeal: #004a54;
+
+  --radius-2xl: 1.25rem;
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Base */
+:root {
+  color-scheme: light;
+}
+body {
+  @apply antialiased bg-white text-slate-900;
+  background: radial-gradient(
+      60rem 60rem at -10% -10%,
+      color-mix(in oklab, var(--color-customLightTeal) 10%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      50rem 50rem at 110% -10%,
+      color-mix(in oklab, var(--color-customTealWhite) 10%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      70rem 70rem at 50% 120%,
+      color-mix(in oklab, var(--color-customNavyTeal) 8%, transparent),
+      transparent 70%
+    );
+}
+
+.card {
+  @apply rounded-2xl border bg-white p-5 shadow-soft;
+}
+.brand-btn {
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-medium text-white bg-customTealWhite hover:bg-customNavyTeal transition;
+}
+.brand-link {
+  @apply text-customNavyTeal underline decoration-transparent hover:decoration-current;
+}
